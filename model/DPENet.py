@@ -24,6 +24,7 @@ class DPENet(nn.Module):
 
     def forward(self, x):
         x_clone = x.clone()
+        print(x.shape)
         x1 = self.inc(x)
         x2 = self.down1(x1)
         x3 = self.down2(x2)
@@ -45,3 +46,7 @@ class DPENet(nn.Module):
 
 net = DPENet(3, 3)
 print(net)
+
+input = torch.randn(1, 3, 512, 512)
+out = net(input)
+print(out)
