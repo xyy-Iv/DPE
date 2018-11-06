@@ -58,6 +58,7 @@ class fc_expand(nn.Module):
         )
     
     def forward(self, x, ex):
+        x = x.view(-1)
         x = self.fceconv(x)
         x = x.expand([ex, ex, x.shape(2)])
         print(x.shape)
