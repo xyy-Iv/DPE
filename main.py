@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 import torch.backends.cudnn as cudnn
+from dataset import *
 from data import *
 from network import *
 
@@ -148,6 +149,12 @@ def test():
             target = target.cuda()
 
         prediction = netG(input)
+        out = prediction.cpu()
+        out_img = out.data[0]
+        if not os.path.exists(os.path.join("result", dataset)):
+            os.makedirs(os.path.join("result", dataset))
+        save_img(out_img, "result/{}/prediction_{}".format(dataset, image_name))
+
         mse = criterionMSE(prediction, target)
         psnr = 10 * log10(1 / mse.data.item())
         avg_psnr += psnr
@@ -159,14 +166,26 @@ def checkpoint(epoch):
         os.mkdir("checkpoint")
     if not os.path.exists(os.path.join("checkpoint", dataset)):
         os.mkdir(os.path.join("checkpoint", dataset))
+
+    state_G = {
+        'net': netG.state_dict(),
+        'optimizer': optimizerG.state_dict(),
+        'epoch':epoch
+    }
+    state_D = {
+        'net': netD.state_dict(),
+        'optimizer': optimizerD.state_dict(),
+        'epoch':epoch
+    }
+
     net_g_model_out_path = "checkpoint/{}/netG_model_epoch_{}.pth".format(dataset, epoch)
     net_d_model_out_path = "checkpoint/{}/netD_model_epoch_{}.pth".format(dataset, epoch)
-    torch.save(netG, net_g_model_out_path)
-    torch.save(netD, net_d_model_out_path)
+    torch.save(state_G, net_g_model_out_path)
+    torch.save(state_D, net_d_model_out_path)
     print("Checkpoint saved to {}".format("checkpoint" + dataset))
 
 for epoch in range(1, nEpochs + 1):
     train(epoch)
     test()
-    if epoch % 50 == 0:
+    if epoch % 1 == 0:
         checkpoint(epoch)
