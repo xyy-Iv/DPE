@@ -17,14 +17,14 @@ from model import DPENet
 dataset = 'Danbooru'
 batchSize = 4
 testBatchSize = 4
-nEpochs = 1
+nEpochs = 200
 input_channel = 3
 output_channel = 3
 ngf = 512
 ndf = 512
 lr = 0.0002
 beta1 = 0.5
-ngpu = 0
+ngpu = 1
 threads = 4
 seed = 999
 lamb = 10
@@ -134,8 +134,8 @@ def train(epoch):
                 epoch, 
                 i, 
                 len(training_data_loader),
-                loss_d.data[0].item(), 
-                loss_g.data[0].item()
+                loss_d.data.item(), 
+                loss_g.data.item()
             )
         )
 
@@ -149,7 +149,7 @@ def test():
 
         prediction = netG(input)
         mse = criterionMSE(prediction, target)
-        psnr = 10 * log10(1 / mse.data[0])
+        psnr = 10 * log10(1 / mse.data.item())
         avg_psnr += psnr
     print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr / len(testing_data_loader)))
 
