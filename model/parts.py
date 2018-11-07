@@ -23,7 +23,7 @@ class inclass(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
-        print(x.shape)
+        
         return x
 
 class down(nn.Module):
@@ -38,7 +38,7 @@ class down(nn.Module):
 
     def forward(self, x):
         x = self.mpconv(x)
-        print(x.shape)
+        
         return x
 
 class pool(nn.Module):
@@ -51,7 +51,7 @@ class pool(nn.Module):
     
     def forward(self, x):
         x = self.poolconv(x)
-        print(x.shape)
+        
         return x
 
 class fc_expand(nn.Module):
@@ -65,8 +65,9 @@ class fc_expand(nn.Module):
     def forward(self, x, ex):
         x = x.view(-1)
         x = self.fceconv(x)
+        
         x = x.expand([ex, ex, 128]).permute(2, 1, 0).resize(1, 128, ex, ex)
-        print(x.shape)
+        
         return x
 
 class mid_conv(nn.Module):
@@ -78,29 +79,25 @@ class mid_conv(nn.Module):
 
     def forward(self, x):
         x = self.conv(x)
-        print(x.shape)
+        
         return x
 
-
-# class concat(nn.Module):
-#     def __init__(self):
-#         super(concat, self).__init__()
-        
 def concat( x1, x2):
-    print(x1.shape, x2.shape)
+    
     x = torch.cat([x1, x2], dim=1)
+    
     return x
 
-class resize(nn.Module):
+class resi(nn.Module):
     def __init__(self, in_ch, out_ch):
-        super(resize, self).__init__()
+        super(resi, self).__init__()
         self.conv = nn.Sequential(
             nn.Upsample(scale_factor=2, mode='bilinear')
         )
     
     def forward(self, x):
         x = self.conv(x)
-        print(x.shape)
+        
         return x
 
 class out_conv(nn.Module):
@@ -109,21 +106,26 @@ class out_conv(nn.Module):
         self.conv = nn.Sequential(
             selu(),
             nn.BatchNorm2d(in_ch),
-            nn.Conv2d(in_ch, out_ch, 5, stride=2)
+            nn.Conv2d(in_ch, out_ch, 5, padding=2)
         )
 
     def forward(self, x):
         x = self.conv(x)
-        print(x.shape)
+        
         return x
 
 class up(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(up, self).__init__()
+        self.up = nn.Sequential(
+            nn.Upsample(scale_factor=2, mode='bilinear')
+        )
         self.conv = out_conv(in_ch, out_ch)
     def forward(self, x1, x2):
-        x1 = resize.conv(x1)
+        x1 = self.up(x1)
+        
         x = torch.cat([x1, x2], dim=1)
+        
         x = self.conv(x)
         return x
 
@@ -136,5 +138,5 @@ class outclass(nn.Module):
     def forward(self, x1, x2):
         x = self.conv(x1)
         x = torch.add(x, x2)
-        print(x.shape)
+        
         return x
