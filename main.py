@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys
 from math import log10
 
+import cv2 as cv
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -23,7 +24,7 @@ ngf = 512
 ndf = 512
 lr = 0.0002
 beta1 = 0.5
-ngpu = 1
+ngpu = 0
 threads = 4
 seed = 999
 lamb = 10
@@ -54,8 +55,8 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
 
 print('======== Networks initialized ========')
-print_network(netG)
-print_network(netD)
+# print_network(netG)
+# print_network(netD)
 
 print("======== Initialization Done ========")
 
@@ -75,8 +76,14 @@ if ngpu:
 def train(epoch):
     for i, batch in enumerate(training_data_loader, 1):
         real_a_cpu, real_b_cpu = batch[0], batch[1]
+        # print(batch[0][1].shape)
+        # a = batch[0][1].numpy().transpose((1, 2, 0))# Get the information of the incoming image type
+        # data = a.astype(np.float64) / np.max(a) # normalize the data to 0 - 1
+        # data = 255 * data # Now scale by 255
+        # img = data.astype(np.uint8)
+        # print(data.shape)
+        # cv.imwrite('a.jpg', img)
         fake_b = netG(real_a)
-
         ############################
         # (1) Update D network: maximize log(D(x,y)) + log(1 - D(x,G(x)))
         ###########################
