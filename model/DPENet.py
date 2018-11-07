@@ -3,9 +3,11 @@ import torch.nn as nn
 from parts import *
 
 class DPENet_gen(nn.Module):
-    def __init__(self, n_channels, n_classes):
+    def __init__(self, ngpu):
         super(DPENet_gen, self).__init__()
-        self.inc = inclass(n_channels, 16)
+        self.ngpu = ngpu
+
+        self.inc = inclass(3, 16)
         self.down1 = down(16, 32)
         self.down2 = down(32, 64)
         self.down3 = down(64, 128)
@@ -20,7 +22,7 @@ class DPENet_gen(nn.Module):
         self.up3 = up(96, 32)
         self.up4 = up(48, 16)
         self.out1 = out_conv(16, 3)
-        self.outc = outclass(3, n_classes)
+        self.outc = outclass(3, 3)
 
     def forward(self, x):
         x_clone = x.clone()
@@ -45,15 +47,49 @@ class DPENet_gen(nn.Module):
         x = self.up4(x, x1)
         x = self.out1(x)
         x = self.outc(x, x_clone)
+        #print(x.shape)
 
-#class DPENet_dis(nn.Module):
+        return x
 
+class DPENet_dis(nn.Module):
+    def __init__(self, ngpu):
+        super(DPENet_dis, self).__init__()
+        self.ngpu = ngpu
+        self.main = nn.Sequential(
+            # input is (nc) x 64 x 64
+            nn.Conv2d(3, 16, 5, padding=2, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.InstanceNorm2d(16),
+            # state size. (ndf) x 32 x 32
+            nn.Conv2d(16, 32, 5, stride=2, padding=2, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            
+            # state size. (ndf*2) x 16 x 16
+            nn.Conv2d(32, 64, 5, stride=2, padding=2, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.InstanceNorm2d(64),
+            # state size. (ndf*4) x 8 x 8
+            nn.Conv2d(64, 128, 5, stride=2, padding=2, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.InstanceNorm2d(64),
 
+            nn.Conv2d(128, 128, 5, stride=2, padding=2, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.InstanceNorm2d(128),
 
+            nn.Conv2d(128, 128, 5, stride=2, padding=2, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.InstanceNorm2d(128),
+            # # state size. (ndf*8) x 4 x 4
+            out_dis(32768, 1)
+            #nn.Sigmoid()
+        )
 
-net = DPENet_gen(3, 3)
-print(net)
+    def forward(self, input):
+        return self.main(input)
 
-input = torch.randn(1, 3, 512, 512)
-out = net(input)
-print(out)
+#net = DPENet_dis(1)
+#print(net)
+#input = torch.randn(2, 3, 512, 512)
+#out = net(input)
+#print(out)

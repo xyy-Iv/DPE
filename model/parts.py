@@ -22,8 +22,9 @@ class inclass(nn.Module):
         )
 
     def forward(self, x):
+        # print(x.shape)
         x = self.conv(x)
-        
+        # print(x.shape)
         return x
 
 class down(nn.Module):
@@ -37,8 +38,9 @@ class down(nn.Module):
         )
 
     def forward(self, x):
+        # print(x.shape)
         x = self.mpconv(x)
-        
+        # print(x.shape)
         return x
 
 class pool(nn.Module):
@@ -50,8 +52,9 @@ class pool(nn.Module):
         )
     
     def forward(self, x):
+        # print(x.shape)
         x = self.poolconv(x)
-        
+        # print(x.shape)
         return x
 
 class fc_expand(nn.Module):
@@ -63,11 +66,15 @@ class fc_expand(nn.Module):
         )
     
     def forward(self, x, ex):
-        x = x.view(-1)
+        bs = x.size(0)
+        # print(x.shape)
+        x = x.view(bs, -1)
         x = self.fceconv(x)
-        
-        x = x.expand([ex, ex, 128]).permute(2, 1, 0).resize(1, 128, ex, ex)
-        
+        # print(x.shape)
+        x = x.resize(bs, 128, 1, 1)
+        # print(x.shape)
+        x = x.expand([bs, 128, ex, ex]) #.permute(0, 3, 2, 1).resize(bs, 128, ex, ex)
+        # print(x.shape)
         return x
 
 class mid_conv(nn.Module):
@@ -78,14 +85,15 @@ class mid_conv(nn.Module):
         )
 
     def forward(self, x):
+        # print(x.shape)
         x = self.conv(x)
-        
+        # print(x.shape)
         return x
 
 def concat( x1, x2):
-    
+    # print(x1.shape, x2.shape)
     x = torch.cat([x1, x2], dim=1)
-    
+    # print(x.shape)
     return x
 
 class resi(nn.Module):
@@ -96,8 +104,9 @@ class resi(nn.Module):
         )
     
     def forward(self, x):
+        # print(x.shape)
         x = self.conv(x)
-        
+        # print(x.shape)
         return x
 
 class out_conv(nn.Module):
@@ -108,10 +117,12 @@ class out_conv(nn.Module):
             nn.BatchNorm2d(in_ch),
             nn.Conv2d(in_ch, out_ch, 5, padding=2)
         )
+        
 
     def forward(self, x):
+        # print(x.shape)
         x = self.conv(x)
-        
+        # print(x.shape)
         return x
 
 class up(nn.Module):
@@ -122,11 +133,13 @@ class up(nn.Module):
         )
         self.conv = out_conv(in_ch, out_ch)
     def forward(self, x1, x2):
+        # print(x1.shape, x2.shape)
         x1 = self.up(x1)
         
         x = torch.cat([x1, x2], dim=1)
-        
+        # print(x.shape)
         x = self.conv(x)
+        # print(x.shape)
         return x
 
 
@@ -136,7 +149,22 @@ class outclass(nn.Module):
         self.conv = out_conv(in_ch, out_ch)
     
     def forward(self, x1, x2):
+        # print(x1.shape, x2.shape)
         x = self.conv(x1)
-        x = torch.add(x, x2)
-        
+        # print(x.shape)
+        x.add(x2)
+        # print("final return", x.shape)
+        return x
+
+class out_dis(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super(out_dis, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Linear(in_ch, out_ch, bias=False)
+        )
+    
+    def forward(self, x):
+        bs = x.size(0)
+        x = x.view(bs, -1)
+        x = self.conv(x)
         return x
