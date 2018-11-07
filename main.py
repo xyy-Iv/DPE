@@ -15,8 +15,8 @@ sys.path.append("./model/")
 from model import DPENet
 
 dataset = 'Danbooru'
-batchSize = 4
-testBatchSize = 4
+batchSize = 5
+testBatchSize = 5
 nEpochs = 200
 input_channel = 3
 output_channel = 3
