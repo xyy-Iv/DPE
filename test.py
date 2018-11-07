@@ -6,10 +6,6 @@ import torchvision.transforms as transforms
 
 sys.path.append("./model/")
 
-<<<<<<< HEAD
-=======
-from model import DPENet
->>>>>>> 75a6e723cc19d79c20cd23c614d7fff752d7439d
 from dataset import *
 from network import *
 
@@ -17,6 +13,7 @@ dataset = 'Danbooru'
 model = 'checkpoint/Danbooru/netG_model_epoch_50.pth'
 ngpu = 1
 netG = torch.load(model)
+netG.eval()
 
 image_dir = 'dataset/' + dataset + '/test/a/'
 image_filenames = [x for x in os.listdir(image_dir) if is_image_file(x)]
