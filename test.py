@@ -1,14 +1,18 @@
 from __future__ import print_function
-import os
+import os, sys
 
 import torch
 import torchvision.transforms as transforms
 
+sys.path.append("./model/")
+
+from model import DPENet
 from dataset import *
+from network import *
 
 dataset = 'Danbooru'
-model = 'checkpoint/Danbooru/netG_model_epoch_200.pth'
-ngpu = 1
+model = 'checkpoint/Danbooru/netG_model_epoch_50.pth'
+ngpu = 0
 
 netG = torch.load(model)
 
