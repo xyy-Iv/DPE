@@ -10,16 +10,16 @@ from dataset import *
 from network import *
 
 dataset = 'Danbooru'
-model = 'checkpoint/Danbooru/netG_model_epoch_50.pth'
+model = 'checkpoint/Danbooru/netG_model_epoch_20.pth'
 ngpu = 1
-netG = torch.load(model)
+netG = torch.load(model)#,  map_location={'cuda:0': 'cpu'})
 netG.eval()
 
 image_dir = 'dataset/' + dataset + '/test/a/'
 image_filenames = [x for x in os.listdir(image_dir) if is_image_file(x)]
 
-transform_list = [transforms.ToTensor(),
-                  transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+transform_list = [transforms.ToTensor()]
+                  #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
 
 transform = transforms.Compose(transform_list)
 
@@ -35,6 +35,6 @@ for image_name in image_filenames:
     out = netG(input)
     out = out.cpu()
     out_img = out.data[0]
-    if not os.path.exists(os.path.join("result", dataset)):
-        os.makedirs(os.path.join("result", dataset))
-    save_img(out_img, "result/{}/{}".format(dataset, image_name))
+    if not os.path.exists(os.path.join("result", dataset + str(20))):
+        os.makedirs(os.path.join("result", dataset + str(20)))
+    save_img(out_img, "result/{}20/{}".format(dataset, image_name))

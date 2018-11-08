@@ -3,6 +3,13 @@ import torch.nn as nn
 
 import numpy as np
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    classname.find('BatchNorm2d') != -1 or classname.find('InstanceNorm2d') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)
+
+
 def print_network(net):
     num_params = 0
     for param in net.parameters():
